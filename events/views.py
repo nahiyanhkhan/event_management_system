@@ -12,7 +12,8 @@ from .models import Event
 
 # Create your views here.
 def home(request):
-    return render(request, "events/home.html")
+    events = Event.objects.all().order_by("-date")
+    return render(request, "events/home.html", {"events": events})
 
 
 def register(request):
@@ -78,28 +79,51 @@ def create_event(request):
     return render(request, "events/create_event.html", {"form": form})
 
 
-@login_required
 def event_detail(request, event_id):
-    event = get_object_or_404(Event, id=event_id, user=request.user)
-    return render(request, "events/event_detail.html", {"event": event})
+    try:
+        event = Event.objects.get(pk=event_id)
+        return render(request, "events/event_detail.html", {"event": event})
+
+    except Event.DoesNotExist:
+        return HttpResponse(
+            """
+            <div style="text-align: center;">
+                <h1>Event doesn't exist!</h1>
+                <h2><a href="/">Go to Home</a></h2>
+            </div>
+            """
+        )
 
 
 @login_required
 def event_update(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
+    try:
+        event = Event.objects.get(pk=event_id)
 
-    if event.user != request.user:
-        return HttpResponseForbidden("You are not allowed to edit this event.")
+        if event.user != request.user and not request.user.is_staff:
+            return HttpResponseForbidden("You are not allowed to edit this event.")
 
-    if request.method == "POST":
-        form = EventForm(request.POST, instance=event)
-        if form.is_valid():
-            form.save()
-            return redirect("my_events")
-    else:
-        form = EventForm(instance=event)
+        if request.method == "POST":
+            form = EventForm(request.POST, instance=event)
+            if form.is_valid():
+                form.save()
+                return redirect("my_events")
+        else:
+            form = EventForm(instance=event)
 
-    return render(request, "events/event_update.html", {"form": form, "event": event})
+        return render(
+            request, "events/event_update.html", {"form": form, "event": event}
+        )
+
+    except Event.DoesNotExist:
+        return HttpResponse(
+            """
+            <div style="text-align: center;">
+                <h1>Event doesn't exist!</h1>
+                <h2><a href="/my-events/">Go to My Events</a></h2>
+            </div>
+            """
+        )
 
 
 @login_required

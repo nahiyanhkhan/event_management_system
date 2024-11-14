@@ -3,5 +3,36 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h1>Home Page</h1>
+<h1>All Events</h1>
+
+{% if events %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in events %}
+        <tr>
+            <td><a href="{% url 'event_detail' event.id %}">{{ event.name }}</a></td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.location }}</td>
+            <td>{{ event.description|truncatewords:10 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No events available at the moment.</p>
+{% endif %}
+
+<script>
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this event?");
+    }
+</script>
 {% endblock %}
