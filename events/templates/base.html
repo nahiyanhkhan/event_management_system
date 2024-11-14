@@ -1,15 +1,58 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
+    
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Event Management{% endblock %}</title>
     <link rel="stylesheet" href="https://matcha.mizu.sh/matcha.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body>
-    {% block content %}{% endblock %}
+    <div class="navbar">
+        <table style="float: left;">
+            <tr>
+                <td>
+                    <a href="{% url 'home' %}">Home</a>
+                </td>
+            </tr>
+        </table>
+    
+        <table style="float: right;">
+            <tr>
+                {% if user.is_authenticated %}
+                <td>
+                    <a href="{% url 'create_event' %}">Create Event</a>
+                </td>
+                <td>
+                    <a href="{% url 'my_events' %}">My Events</a>
+                </td>
+                <td>
+                    <a href="{% url 'my_booked_events' %}">My Booked Events</a>
+                </td>
+                <td>
+                    <a href="{% url 'profile' %}">Profile</a>
+                </td>
+                <td>
+                    <a href="{% url 'logout' %}">Logout</a>
+                </td>
+                {% else %}
+                <td>
+                    <a href="{% url 'register' %}">Register</a>
+                </td>
+                <td>
+                    <a href="{% url 'login' %}">Login</a>
+                </td>
+                {% endif %}
+            </tr>
+        </table>
+    </div>
+    
+    <div class="content" style="clear: both;">
+        {% block content %}{% endblock %}
+    </div>
 </body>
 
 </html>
