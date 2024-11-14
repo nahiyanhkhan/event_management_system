@@ -12,3 +12,18 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Booking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookings")
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="bookings")
+    booking_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (
+            "user",
+            "event",
+        )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.event.name}"

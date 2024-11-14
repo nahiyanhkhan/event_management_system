@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}My Booked Events{% endblock %}
+
+{% block content %}
+<h1>My Booked Events</h1>
+
+{% if bookings %}
+<table>
+    <thead>
+        <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td><a href="{% url 'event_detail' booking.event.id %}">{{ booking.event.name }}</a></td>
+            <td>{{ booking.event.date }}</td>
+            <td>{{ booking.event.location }}</td>
+            <td>{{ booking.event.description|truncatewords:10 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>You have not booked any events yet.</p>
+{% endif %}
+{% endblock %}

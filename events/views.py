@@ -7,13 +7,23 @@ from django.contrib.auth.forms import (
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserChangeForm, EventForm
-from .models import Event
+from .models import Event, Booking
 
 
 # Create your views here.
 def home(request):
     events = Event.objects.all().order_by("-date")
-    return render(request, "events/home.html", {"events": events})
+
+    booked_events = []
+
+    if request.user.is_authenticated:
+        booked_events = Booking.objects.filter(user=request.user).values_list(
+            "event_id", flat=True
+        )
+
+    return render(
+        request, "events/home.html", {"events": events, "booked_events": booked_events}
+    )
 
 
 def register(request):
@@ -144,3 +154,35 @@ def event_delete(request, event_id):
             </div>
         """
         )
+
+
+@login_required
+def book_event(request, event_id):
+    try:
+        # Attempt to retrieve the event
+        event = Event.objects.get(id=event_id)
+
+        # Check if the user has already booked the event
+        if Booking.objects.filter(user=request.user, event=event).exists():
+            return HttpResponseForbidden("You have already booked this event.")
+
+        # Create a new booking
+        Booking.objects.create(user=request.user, event=event)
+        return redirect("my_booked_events")
+
+    except Event.DoesNotExist:
+        # Show a relevant message if the event does not exist
+        return HttpResponse(
+            """
+            <div style="text-align: center;">
+                <h1>Event doesn't exist!</h1>
+                <h2><a href="/">Go to Home</a></h2>
+            </div>
+            """
+        )
+
+
+@login_required
+def my_booked_events(request):
+    bookings = Booking.objects.filter(user=request.user)
+    return render(request, "events/my_booked_events.html", {"bookings": bookings})
