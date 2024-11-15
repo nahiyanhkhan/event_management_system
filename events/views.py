@@ -8,22 +8,41 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserChangeForm, EventForm
 from .models import Event, Booking
+from django.db.models import Q
 
 
 # Create your views here.
 def home(request):
+    query = request.GET.get("q", "")
+    category = request.GET.get("category", "")
+
     events = Event.objects.all().order_by("-date")
 
-    booked_events = []
+    if query:
+        events = events.filter(
+            Q(name__icontains=query)
+            | Q(date__icontains=query)
+            | Q(location__icontains=query)
+        )
 
+    if category:
+        events = events.filter(category=category)
+
+    booked_events = []
     if request.user.is_authenticated:
         booked_events = Booking.objects.filter(user=request.user).values_list(
             "event_id", flat=True
         )
 
-    return render(
-        request, "events/home.html", {"events": events, "booked_events": booked_events}
-    )
+    context = {
+        "events": events,
+        "booked_events": booked_events,
+        "query": query,
+        "selected_category": category,
+        "category_choices": Event.CATEGORY_CHOICES,
+    }
+
+    return render(request, "events/home.html", context=context)
 
 
 def register(request):
@@ -162,9 +181,26 @@ def book_event(request, event_id):
         # Attempt to retrieve the event
         event = Event.objects.get(id=event_id)
 
+        if event.is_fully_booked():
+            return HttpResponse(
+                """
+                <div style="text-align: center;">
+                    <h1>This event is fully booked!</h1>
+                    <h2><a href="/">Return to Homepage</a></h2>
+                </div>
+                """
+            )
+
         # Check if the user has already booked the event
         if Booking.objects.filter(user=request.user, event=event).exists():
-            return HttpResponseForbidden("You have already booked this event.")
+            return HttpResponse(
+                """
+                <div style="text-align: center;">
+                    <h1>You have already booked this event!</h1>
+                    <h2><a href="/">Return to Homepage</a></h2>
+                </div>
+                """
+            )
 
         # Create a new booking
         Booking.objects.create(user=request.user, event=event)

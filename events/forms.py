@@ -19,7 +19,7 @@ class CustomUserChangeForm(UserChangeForm):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ["name", "date", "location", "description"]
+        fields = ["name", "date", "location", "description", "category", "capacity"]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
         }

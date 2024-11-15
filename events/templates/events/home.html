@@ -5,6 +5,11 @@
 {% block content %}
 <h1>All Events</h1>
 
+<form method="get" action="{% url 'home' %}">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search events by name, date, or location">
+    <button type="submit">Search</button>
+</form>
+
 {% if events %}
 <table>
     <thead>
@@ -13,7 +18,7 @@
             <th>Date</th>
             <th>Location</th>
             <th>Description</th>
-            <th>Action</th>
+            <th>Status</th>
         </tr>
     </thead>
     <tbody>
@@ -24,14 +29,16 @@
             <td>{{ event.location }}</td>
             <td>{{ event.description|truncatewords:10 }}</td>
             <td>
-                {% if user.is_authenticated %}
+                {% if event.is_fully_booked %}
+                <span>Closed (Fully Booked)</span>
+                {% elif user.is_authenticated %}
                 {% if event.id in booked_events %}
                 <span>Booked</span>
                 {% else %}
                 <a href="{% url 'book_event' event.id %}">Book Now</a>
                 {% endif %}
                 {% else %}
-                <a href="{% url 'login' %}?next={% url 'book_event' event.id %}">Log in to book</a>
+                    <a href="{% url 'login' %}?next={% url 'book_event' event.id %}">Log in to book</a>
                 {% endif %}
             </td>
         </tr>
