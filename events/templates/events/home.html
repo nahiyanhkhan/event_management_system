@@ -30,20 +30,18 @@
             <td>{{ event.description|truncatewords:10 }}</td>
             <td>
                 {% if event.is_fully_booked %}
-                <span>Closed (No more slots)</span>
+                    <span>Closed (No more slots)</span>
+                    {% if user.is_authenticated and event.id in booked_events %}
+                    <br><span>You already booked</span>
+                    {% endif %}
                 {% elif user.is_authenticated %}
-                {% if event.id in booked_events %}
-                <span>Booked</span>
+                    {% if event.id in booked_events %}
+                    <span>Booked</span>
+                    {% else %}
+                    <a href="{% url 'book_event' event.id %}">Book Now</a>
+                    {% endif %}
                 {% else %}
-                <a href="{% url 'book_event' event.id %}">Book Now</a>
-                {% endif %}
-                {% else %}
-                    <a href="{% url 'login' %}?next={% url 'book_event' event.id %}">Log in to book</a>
-                {% endif %}
-                {% if user.is_authenticated %}
-                {% if event.id in booked_events %}
-                <br><span>You already Booked</span>
-                {% endif %}
+                <a href="{% url 'login' %}?next={% url 'book_event' event.id %}">Log in to book</a>
                 {% endif %}
             </td>
         </tr>
