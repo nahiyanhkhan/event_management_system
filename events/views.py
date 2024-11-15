@@ -15,18 +15,18 @@ from django.db.models import Q
 def home(request):
     query = request.GET.get("q", "")
     category = request.GET.get("category", "")
+    selected_date = request.GET.get("date", "")
 
     events = Event.objects.all().order_by("-date")
 
     if query:
-        events = events.filter(
-            Q(name__icontains=query)
-            | Q(date__icontains=query)
-            | Q(location__icontains=query)
-        )
+        events = events.filter(Q(name__icontains=query) | Q(location__icontains=query))
 
     if category:
         events = events.filter(category=category)
+
+    if selected_date:
+        events = events.filter(date=selected_date)
 
     booked_events = []
     if request.user.is_authenticated:
@@ -34,15 +34,21 @@ def home(request):
             "event_id", flat=True
         )
 
+    categories = [
+        {"code": code, "label": label, "is_selected": (code == category)}
+        for code, label in Event.CATEGORY_CHOICES
+    ]
+
     context = {
         "events": events,
         "booked_events": booked_events,
         "query": query,
         "selected_category": category,
-        "category_choices": Event.CATEGORY_CHOICES,
+        "selected_date": selected_date,
+        "categories": categories,
     }
 
-    return render(request, "events/home.html", context=context)
+    return render(request, "events/home.html", context)
 
 
 def register(request):
@@ -90,7 +96,7 @@ def profile_view(request):
 
 @login_required
 def my_events(request):
-    events = Event.objects.filter(user=request.user)
+    events = Event.objects.filter(user=request.user).order_by("-date")
     return render(request, "events/my_events.html", {"events": events})
 
 
@@ -178,7 +184,6 @@ def event_delete(request, event_id):
 @login_required
 def book_event(request, event_id):
     try:
-        # Attempt to retrieve the event
         event = Event.objects.get(id=event_id)
 
         if event.is_fully_booked():
@@ -191,7 +196,6 @@ def book_event(request, event_id):
                 """
             )
 
-        # Check if the user has already booked the event
         if Booking.objects.filter(user=request.user, event=event).exists():
             return HttpResponse(
                 """
@@ -202,12 +206,10 @@ def book_event(request, event_id):
                 """
             )
 
-        # Create a new booking
         Booking.objects.create(user=request.user, event=event)
         return redirect("my_booked_events")
 
     except Event.DoesNotExist:
-        # Show a relevant message if the event does not exist
         return HttpResponse(
             """
             <div style="text-align: center;">

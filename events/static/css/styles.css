@@ -1,0 +1,13 @@
+.clear-filters-btn {
+    margin-left: 10px;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+}
+
+.clear-filters-btn:hover {
+    background-color: #0056b3;
+}
