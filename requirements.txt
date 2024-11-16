@@ -1,0 +1,15 @@
+asgiref==3.8.1
+blinker==1.8.2
+click==8.1.7
+colorama==0.4.6
+crispy-bootstrap5==2024.10
+Django==5.1.1
+django-crispy-forms==2.3
+Flask==3.0.3
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+PyMySQL==1.1.1
+sqlparse==0.5.1
+tzdata==2024.2
+Werkzeug==3.0.4
